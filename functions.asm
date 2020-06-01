@@ -29,8 +29,6 @@ _convert: ;convert bytes per bytes
     inc     ebx
     jmp     _convert
 
-
-
 _stop:
     cmp     cl, 10
     jne     _bad_end
