@@ -58,7 +58,7 @@ _bad_end:
     mov     ecx, 1
     ret
 
-random:
+time:
     ;Preserve all registers
     push    ebx
     push    edx
@@ -68,11 +68,94 @@ random:
     ;Interrupts to get system time
     mov     eax, 13
     int     80h
-    mov     eax, 3
 
     ;Restore all registers
     pop     esi
     pop     ecx
     pop     edx
+    pop     ebx
+    ret
+
+len: ;Get string length
+    ;Preserve ebx
+    push    ebx
+    mov     ebx, eax
+
+_next:
+    cmp     byte [eax], 0    ; If EOL
+    jz      _finish_len
+    inc     eax
+    jmp     _next
+
+_finish_len:
+    sub eax, ebx
+
+    ;Restore ebx
+    pop     ebx
+    ret
+
+print: ;Print string
+    ;Preserve all registers
+    push    ebx
+    push    ecx
+    push    edx
+    ;Save string
+    push    eax
+
+    ;Get string length
+    call    len
+    mov     edx, eax    ; Length
+    pop     eax
+    
+    ;Sys_write
+    mov     ecx, eax    ; String
+    mov     ebx, 1
+    mov     eax, 4
+    int     80h
+ 
+    ;Restore all registers
+    pop     edx
+    pop     ecx
+    pop     ebx
+    ret
+
+read:
+    ;Preserve all registers
+    push    ebx
+    push    ecx
+    push    edx
+
+    ;Sys_read
+    mov     ecx, eax
+    mov	    eax, 3
+    mov     ebx, 2 
+    mov     edx, 5
+    int	    0x80
+
+ 
+    ;Restore all registers
+    pop     edx
+    pop     ecx
+    pop     ebx
+    ret
+
+random:
+    ;Preserve all registers
+    push    ebx
+    push    ecx
+    push    edx
+
+    mov     edx, eax    ;store old seed
+    call    time        ;get time
+    add     eax, edx
+
+    ;Mod operation with remainder in div
+    mov     ebx, 100
+    div     ebx
+    mov     eax, edx
+    
+    ;Restore all registers
+    pop     edx
+    pop     ecx
     pop     ebx
     ret
