@@ -7,7 +7,7 @@ Guess the number program using ASM language
 
 ## Usage
 ### Compile and Run
-```./compile_and_run.sh```
+```./compile_n_run.sh```
 
 ## References
 - TutorialsPoint: https://www.tutorialspoint.com/assembly_programming/
