@@ -29,6 +29,8 @@ _convert: ;convert bytes per bytes
     inc     ebx
     jmp     _convert
 
+
+
 _stop:
     cmp     cl, 10
     jne     _bad_end
@@ -150,7 +152,7 @@ random:
     add     eax, edx
 
     ;Mod operation with remainder in div
-    mov     ebx, 100
+    mov     ebx, 256 ;change 256 if you want to change the guess' interval
     div     ebx
     mov     eax, edx
     
@@ -158,4 +160,47 @@ random:
     pop     edx
     pop     ecx
     pop     ebx
+    ret
+
+iprint:
+    ;Preserve all registers
+    push    eax
+    push    ebx
+    push    ecx
+    push    edx
+
+    mov     ecx, 0      ;char counters
+
+_loop_convert:    
+    inc     ecx
+
+    ;Take n % 10 in edx
+    mov     edx, 0
+    mov     ebx, 10
+    div     ebx
+
+    ;Convert to ascii and push to stack
+    add     edx, 48
+    push    edx
+
+    ;Nothing to convert (n/10 = 0)
+    cmp     eax, 0
+    jnz     _loop_convert
+ 
+_loop_print:
+    dec     ecx
+
+    ;Print ascii byte per byte
+    mov     eax, esp    ;We want a pointer here, so we use esp as a temp string
+    call    print
+    pop     eax
+
+    cmp     ecx, 0
+    jnz     _loop_print
+ 
+    ;Restore all registers
+    pop     edx
+    pop     ecx
+    pop     ebx
+    pop     eax
     ret
