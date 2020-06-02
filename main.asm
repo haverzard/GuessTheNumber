@@ -2,13 +2,13 @@
 
 section .bss
    dif resb 4
-   num resb 4
+   num resb 128
 
 section	.data
     greeting    db	    'Welcome to the guessing game!', 0xa, 0x0
     inputDif    db	    'Please input the difficulty number: ', 0x0
     inputGuess  db	    0xa, 'Please input a guess number (0-256): ', 0x0
-    badNumber   db	    'Please input a number!', 0xa, 0xa, 0x0
+    badNumber   db	    'Your input is invalid', 0xa, 0xa, 0x0
     greater     db      'Too high!', 0xa, 0x0
     lower       db      'Too low!', 0xa, 0x0
     equal       db      'Correct!', 0xa, 0x0
@@ -72,9 +72,9 @@ _guess:
 
     ;If input is number
     mov     eax, num
-    call    atoi             ;eax will be the integer representative and ecx will be the flag
+    call    atoi_2             ;eax will be the integer representative and ecx will be the flag
     cmp     ecx, 1
-    je      _not_number2     ;conversion failed
+    je      _failed     ;conversion failed
 
     ;Prepare for checking
     mov     ecx, 0
@@ -83,12 +83,13 @@ _guess:
 
 _check_guess:
     ;Check the guess
-    mov     eax, [esi+ecx*4+4]
+    lea     eax, [esi+ecx*4+4]
+    mov     eax, [eax+edx*4]
 
     ;Comparison
-    cmp     eax, edi
+    cmp     eax, [esi+ecx*4+4]
     jl      _greater
-    cmp     eax, edi
+    cmp     eax, [esi+ecx*4+4]
     jg      _lower
 
     ;Preparing to squeeze array (in stack)
@@ -127,6 +128,7 @@ _wrong:
     cmp     ecx, edx
     jl     _check_guess
 
+_end_guess:
     ;Remember to increase number of guesses    
     pop     eax
     inc     eax
@@ -151,11 +153,11 @@ _not_number:
     call    print
     jmp     _choose_dif
 
-_not_number2:
+_failed:
     ;Print Error message
     mov	    eax, badNumber
     call    print
-    jmp     _wrong
+    jmp     _end_guess
 
 _exit:
     ;Print final result
