@@ -55,17 +55,19 @@ _bad_end:
     mov     ecx, 1
     ret
 
-atoi_2: ;ascii to integer (input from eax)
+atoi_space: ;ascii to integer (input from eax)
     ;Preserve all registers
+    push    ebp
+    lea     ebp, [esp]
     push    ebx
     push    edx
     push    esi
     push    edi
 
-    mov     edi, 0
     mov     esi, eax
     mov     eax, 0      ; our integer representative
     mov     ebx, 0      ; our pointer
+    mov     edi, 0      ; our number counter
 
 _convert_2: ;convert bytes per bytes
     xor     ecx, ecx
@@ -76,6 +78,7 @@ _convert_2: ;convert bytes per bytes
     jl      _stop_2
     cmp     cl, 57
     jg      _stop_2
+
 
     ;Converting ascii byte to int
     sub     cl, 48      ; Ascii value 48 is 0 so 48-48 = 0
@@ -89,68 +92,60 @@ _convert_2: ;convert bytes per bytes
 
 _stop_2:
     cmp     cl, 32
-    je     _next_2
+    je      _next_convert_2
     cmp     cl, 10
     jne     _bad_end_2
 
-    ;Check numbers of input with the numbers of guesses
-    mov     ecx, [esp+edi*4+8]
-    sub     ecx, 1
-    cmp     edi, ecx
-    jne     _bad_end_2
     inc     edi
+    cmp     edi, [ebp-8] ;edx = length
+    jne     _bad_end_2
 
 _end_2:
     mov     ecx, 10
-    div     ecx
-    push    eax
-    
-    lea     esp, [esp+edi*4]
+    div     ecx             ; Divide by 10 because it was multiplied by 10 before jump
+    mov     ecx, [ebp-12]
+    mov     [ecx], eax   
 
-    mov     ecx, edi
     ;Restore all registers
     pop     edi
     pop     esi
     pop     edx
     pop     ebx
-    push    ebx
-    xor ecx, ecx
-    mov ebx, esp
-    lea esp, [esp-32]
+    pop     ebp
 
-_move_upper:
-    inc     ecx
-    cmp     ecx, edx
-    jne     _move_upper   
-
-    pop     ecx
-    mov     esp, ebx
-    mov     ebx, ecx
     ;Set flag
     mov     ecx, 0
     ret
 
-_next_2:
-    inc     edi
-    inc     ebx
+_next_convert_2:
+    inc     edi ;counter++
+    inc     ebx ;next char
     mov     ecx, 10
     div     ecx
-    push    eax
+    mov     ecx, [ebp-12]       ;[ebp-12] = esi
+    add     ecx, [ebp-8]        ;[ebp-8] = edx
+    add     ecx, [ebp-8]
+    add     ecx, [ebp-8]
+    add     ecx, [ebp-8]
+    sub     ecx, edi
+    sub     ecx, edi
+    sub     ecx, edi
+    sub     ecx, edi
+    mov     [ecx], eax
     xor     eax, eax
     jmp     _convert_2
 
 _bad_end_2:
-    lea     esp, [esp+edi*4]
     ;Restore all registers
     pop     edi
     pop     esi
     pop     edx
     pop     ebx
-    
+    pop     ebp
+
     ;Set flag
     mov     ecx, 1
     ret
-
 
 time:
     ;Preserve all registers

@@ -7,7 +7,7 @@ section .bss
 section	.data
     greeting    db	    'Welcome to the guessing game!', 0xa, 0x0
     inputDif    db	    'Please input the difficulty number: ', 0x0
-    inputGuess  db	    0xa, 'Please input a guess number (0-256): ', 0x0
+    inputGuess  db	    0xa, 'Please input [3+difficulty] guess numbers separated with space (0-256): ', 0x0
     badNumber   db	    'Your input is invalid', 0xa, 0xa, 0x0
     greater     db      'Too high!', 0xa, 0x0
     lower       db      'Too low!', 0xa, 0x0
@@ -42,17 +42,28 @@ _choose_dif:
     add     eax, 3
     mov     ecx, 0      ;counter
     mov     edx, eax
-    push    edx         ;store number counters for end result
 
 _init_randoms: ;repeat for dif_level + 3 times
     ;Get a random number (with seed)
     call    random
     push    eax
+    call iprint
 
     inc     ecx
     cmp     ecx, edx
     jne     _init_randoms
     mov     eax, 0
+
+    ;Save stack pointer to random number
+    mov     edi, esp
+    
+    push    edx
+    ;Setup space for input array
+    sub     esp, edx
+    sub     esp, edx
+    sub     esp, edx
+    sub     esp, edx
+    mov     esi, esp ;Store esp to esi
     
 _guess:
     ;Store some values
@@ -72,42 +83,49 @@ _guess:
 
     ;If input is number
     mov     eax, num
-    call    atoi_2             ;eax will be the integer representative and ecx will be the flag
+    call    atoi_space
     cmp     ecx, 1
     je      _failed     ;conversion failed
 
     ;Prepare for checking
-    mov     ecx, 0
-    mov     edi, eax
-    mov     esi, esp
+    mov     ecx, edx
 
 _check_guess:
     ;Check the guess
-    lea     eax, [esi+ecx*4+4]
-    mov     eax, [eax+edx*4]
-
+    mov     eax, [edi+ecx*4-4] ;Remember edi stores pointer to random numbers
+    call iprint
     ;Comparison
-    cmp     eax, [esi+ecx*4+4]
+    cmp     eax, [esi+ecx*4-4]
     jl      _greater
-    cmp     eax, [esi+ecx*4+4]
+    cmp     eax, [esi+ecx*4-4]
     jg      _lower
 
     ;Preparing to squeeze array (in stack)
-    mov     edi, ecx
     push    edx
+    push    ebx
+    mov     ebx, ecx
     
 _squeeze:
     ;Moving lower addr elements to upper (Example: Guessed 2 in [1,2,3] -> [1,3] - from low to high address)
-    cmp     edi, 0
+    cmp     ebx, 1
     jl      _success
-    lea     eax, [esi+edi*4]
+
+    ;Update input array
+    lea     eax, [esi+ebx*4-8]
+    mov     edx, [eax]
+    mov     [eax+4], edx
+    
+    ;Update random numbers array
+    lea     eax, [edi+ebx*4-8]
     mov     edx, [eax]
     mov     [eax+4], edx
 
-    dec edi
+    dec ebx
     jmp _squeeze
 
 _success:
+    ;Restore register values
+    pop     ebx
     pop     edx
 
     ;Print success
@@ -115,23 +133,23 @@ _success:
     call    print
 
     ;Place stack pointer to higher address to align
-    add     esp, 4
+    add     edi, 4
     add     esi, 4
 
     ;Decrease counters
     dec     edx
-    dec     ecx
 
 _wrong:
     ;Make sure to iterate all numbers
-    inc     ecx
-    cmp     ecx, edx
-    jl     _check_guess
+    dec     ecx
+    cmp     ecx, 0
+    jnz     _check_guess
 
 _end_guess:
-    ;Remember to increase number of guesses    
+    ;Remember to increase number of guesses
     pop     eax
     inc     eax
+    call iprint
     jmp      _guess
 
 
@@ -167,7 +185,7 @@ _exit:
     call iprint
     mov eax, count2
     call print
-    pop eax
+    mov eax, [esi+4]
     call iprint
     mov eax, count3
     call print
