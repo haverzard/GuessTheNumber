@@ -184,6 +184,10 @@ _loop_convert:
     ;Nothing to convert (n/10 = 0)
     cmp     eax, 0
     jnz     _loop_convert
+
+    ;Just to make sure next address is empty
+    push    0
+    pop     eax
  
 _loop_print:
     dec     ecx

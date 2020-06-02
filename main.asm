@@ -7,7 +7,7 @@ section .bss
 section	.data
     greeting    db	    'Welcome to the guessing game!', 0xa, 0x0
     inputDif    db	    'Please input the difficulty number: ', 0x0
-    inputGuess  db	    0xa, 'Please input a guess number (0-1000): ', 0x0
+    inputGuess  db	    0xa, 'Please input a guess number (0-256): ', 0x0
     badNumber   db	    'Please input a number!', 0xa, 0xa, 0x0
     greater     db      'Too high!', 0xa, 0x0
     lower       db      'Too low!', 0xa, 0x0
