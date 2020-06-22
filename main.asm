@@ -47,7 +47,6 @@ _init_randoms: ;repeat for dif_level + 3 times
     ;Get a random number (with seed)
     call    random
     push    eax
-    call iprint
 
     inc     ecx
     cmp     ecx, edx
@@ -93,7 +92,7 @@ _guess:
 _check_guess:
     ;Check the guess
     mov     eax, [edi+ecx*4-4] ;Remember edi stores pointer to random numbers
-    call iprint
+
     ;Comparison
     cmp     eax, [esi+ecx*4-4]
     jl      _greater
@@ -149,7 +148,7 @@ _end_guess:
     ;Remember to increase number of guesses
     pop     eax
     inc     eax
-    call iprint
+
     jmp      _guess
 
 
